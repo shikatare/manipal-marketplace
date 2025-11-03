@@ -30,6 +30,7 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='active')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    image_url = db.Column(db.String(500))  # Added for product images
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     views = db.Column(db.Integer, default=0)
     
@@ -49,4 +50,4 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
-        return f'<Message {self.id}>'
+        return f'<Message {self.id}>' 
