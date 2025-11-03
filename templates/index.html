@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipal Market</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .category-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            color: #007bff;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .product-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 5px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-top">
+            <h1>Manipal Market</h1>
+            <div id="userSection">
+                <button class="btn-primary" onclick="showAuthModal('login')">Login</button>
+                <button class="btn-secondary" onclick="showAuthModal('signup')">Sign Up</button>
+            </div>
+        </div>
+
+        <input type="text" id="searchBox" placeholder="Search products..." oninput="loadProducts()">
+
+        <div class="categories" id="categories"></div>
+    </div>
+
+    <div class="products" id="productsGrid"></div>
+    <div class="no-products" id="noProducts" style="display: none;">
+        <h2>No products found</h2>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <div class="tabs">
+                <button class="tab active" id="loginTab" onclick="switchTab('login')">Login</button>
+                <button class="tab" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+
+            <div id="loginForm">
+                <h2>Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="closeAuthModal()">Cancel</button>
+                    <button class="btn-primary" onclick="login()">Login</button>
+                </div>
+            </div>
+
+            <div id="signupForm" style="display: none;">
+                <h2>Sign Up</h2>
+                <input type="text" id="signupUsername" placeholder="Username">
+                <input type="email" id="signupEmail" placeholder="Email">
+                <input type="password" id="signupPassword" placeholder="Password">
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="closeAuthModal()">Cancel</button>
+                    <button class="btn-primary" onclick="signup()">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <h2>Sell Your Item</h2>
+            <input type="text" id="productTitle" placeholder="Product Title">
+            <input type="number" id="productPrice" placeholder="Price (₹)">
+            <select id="productCategory">
+                <option value="Books">Books</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Sports">Sports</option>
+                <option value="Other">Other</option>
+            </select>
+            <textarea id="productDescription" placeholder="Description"></textarea>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="closeAddProductModal()">Cancel</button>
+                <button class="btn-primary" onclick="addProduct()">List Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal" id="contactModal">
+        <div class="modal-content">
+            <h2>Contact Seller</h2>
+            <p id="sellerInfo"></p>
+            <textarea id="messageContent" placeholder="Your message..."></textarea>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="closeContactModal()">Cancel</button>
+                <button class="btn-success" onclick="sendMessage()">Send Message</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categories = ['All', 'Books', 'Electronics', 'Furniture', 'Clothing', 'Sports', 'Other'];
+        let currentCategory = 'All';
+        let currentUser = null;
+        let selectedProduct = null;
+
+        async function init() {
+            await checkUser();
+            renderCategories();
+            loadProducts();
+        }
+
+        async function checkUser() {
+            const response = await fetch('/api/current-user');
+            const data = await response.json();
+            if (data.loggedIn) {
+                currentUser = data;
+                updateUserSection();
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = categories.map(cat => 
+                `<button class="category-btn ${cat === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat}')">${cat}</button>`
+            ).join('');
+        }
+
+        function selectCategory(category) {
+            currentCategory = category;
+            renderCategories();
+            loadProducts();
+        }
+
+        async function loadProducts() {
+            const search = document.getElementById('searchBox').value;
+            const response = await fetch(`/api/products?category=${currentCategory}&search=${search}`);
+            const products = await response.json();
+            renderProducts(products);
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            const noProducts = document.getElementById('noProducts');
+            
+            if (products.length === 0) {
+                grid.style.display = 'none';
+                noProducts.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noProducts.style.display = 'none';
+            
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-title">${p.title}</div>
+                    <div class="product-price">₹${p.price.toLocaleString('en-IN')}</div>
+                    <div>${p.description}</div>
+                    <div class="product-info">
+                        <div>Seller: ${p.seller}</div>
+                        <div>Category: ${p.category}</div>
+                        <div>Views: ${p.views}</div>
+                    </div>
+                    <button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="openContactModal(${p.id}, '${p.seller}', ${p.seller_id})">Contact Seller</button>
+                </div>
+            `).join('');
+        }
+
+        function updateUserSection() {
+            const section = document.getElementById('userSection');
+            if (currentUser) {
+                section.innerHTML = `
+                    <span>Hello, ${currentUser.username}</span>
+                    ${currentUser.is_admin ? '<button class="btn-secondary" onclick="location.href=\'/admin\'">Admin</button>' : ''}
+                    <button class="btn-primary" onclick="location.href='/dashboard'">Dashboard</button>
+                    <button class="btn-success" onclick="showAddProductModal()">Sell Item</button>
+                    <button class="btn-danger" onclick="logout()">Logout</button>
+                `;
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data;
+                updateUserSection();
+                closeAuthModal();
+                alert('Login successful!');
+            } else {
+                alert('Login failed: ' + data.message);
+            }
+        }
+
+        async function signup() {
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data;
+                updateUserSection();
+                closeAuthModal();
+                alert('Account created successfully!');
+            } else {
+                alert('Signup failed: ' + data.message);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            currentUser = null;
+            location.reload();
+        }
+
+        async function addProduct() {
+            const title = document.getElementById('productTitle').value;
+            const price = document.getElementById('productPrice').value;
+            const category = document.getElementById('productCategory').value;
+            const description = document.getElementById('productDescription').value;
+            
+            if (!title || !price || !description) {
+                alert('Please fill all fields!');
+                return;
+            }
+
+            const response = await fetch('/api/add-product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, price, category, description })
+            });
+            
+            if (response.ok) {
+                closeAddProductModal();
+                loadProducts();
+                alert('Product listed successfully!');
+            }
+        }
+
+        function openContactModal(productId, sellerName, sellerId) {
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            selectedProduct = { id: productId, seller: sellerName, sellerId: sellerId };
+            document.getElementById('sellerInfo').textContent = `Send a message to ${sellerName}`;
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        async function sendMessage() {
+            const content = document.getElementById('messageContent').value;
+            if (!content) {
+                alert('Please enter a message!');
+                return;
+            }
+
+            const response = await fetch('/api/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: content,
+                    recipient_id: selectedProduct.sellerId,
+                    product_id: selectedProduct.id
+                })
+            });
+
+            if (response.ok) {
+                alert('Message sent!');
+                closeContactModal();
+            }
+        }
+
+        function showAuthModal(tab) {
+            switchTab(tab);
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function showAddProductModal() {
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            document.getElementById('addProductModal').classList.add('active');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('active');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('active');
+        }
+
+        init();
+    </script>
+</body>
+</html>

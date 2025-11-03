@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Manipal Market</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .messages {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .message {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message:last-child {
+            border-bottom: none;
+        }
+
+        .message.unread {
+            background-color: #e7f3ff;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .no-items {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 5px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>My Dashboard</h1>
+        <a href="/" style="text-decoration: none;">
+            <button class="btn-primary">Back to Market</button>
+        </a>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchSection('products')">My Listings</button>
+        <button class="tab" onclick="switchSection('messages')">Messages ({{ unread_count }})</button>
+    </div>
+
+    <!-- My Products -->
+    <div id="products-section" class="section active">
+        {% if products %}
+        <div class="products">
+            {% for product in products %}
+            <div class="product-card">
+                <div style="font-weight: bold; margin-bottom: 10px;">{{ product.title }}</div>
+                <div style="color: #007bff; font-size: 20px; font-weight: bold; margin: 10px 0;">
+                    ₹{{ "{:,}".format(product.price) }}
+                </div>
+                <div>{{ product.description }}</div>
+                <div style="color: #666; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                    <div>Category: {{ product.category }}</div>
+                    <div>Views: {{ product.views }}</div>
+                    <div>Date: {{ product.created_at.strftime('%Y-%m-%d') }}</div>
+                </div>
+<button class="btn-danger"
+        style="width: 100%; margin-top: 10px;"
+        onclick="deleteProduct('{{ product.id }}')">
+    Delete
+</button>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-items">
+            <h2>No listings yet</h2>
+            <p>Start selling by listing your first item!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Messages -->
+    <div id="messages-section" class="section">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+<div class="message {% if not message.is_read %}unread{% endif %}"
+     onclick="markRead('{{ message.id }}')">
+
+                <div><strong>From: {{ message.sender_name }}</strong></div>
+                <div style="margin: 10px 0;">{{ message.content }}</div>
+                <div style="color: #999; font-size: 12px;">
+                    Product ID: #{{ message.product_id }} | {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-items">
+            <h2>No messages yet</h2>
+            <p>Messages from buyers will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function switchSection(section) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(section + '-section').classList.add('active');
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            const response = await fetch(`/api/delete-product/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                alert('Product deleted!');
+                location.reload();
+            }
+        }
+
+        async function markRead(id) {
+            await fetch(`/api/mark-read/${id}`, { method: 'POST' });
+            event.target.classList.remove('unread');
+        }
+    </script>
+</body>
+</html>
